@@ -1,0 +1,667 @@
+     1→'use client'
+     2→
+     3→import { useState, useEffect, useCallback } from 'react'
+     4→import { motion, AnimatePresence } from 'framer-motion'
+     5→import {
+     6→  LogIn, LogOut, Shield, User, Check, X, Loader2,
+     7→  Building2, Send, ChevronLeft, Eye, EyeOff
+     8→} from 'lucide-react'
+     9→import { Button } from '@/components/ui/button'
+    10→import { Input } from '@/components/ui/input'
+    11→import { Card, CardContent, CardHeader } from '@/components/ui/card'
+    12→import { useToast } from '@/hooks/use-toast'
+    13→import Image from 'next/image'
+    14→
+    15→interface UserInfo {
+    16→  id: string
+    17→  username: string
+    18→  name: string
+    19→  role: 'admin' | 'user'
+    20→}
+    21→
+    22→interface Branch {
+    23→  id: string
+    24→  name: string
+    25→  targetSent: boolean
+    26→  updatedAt: string
+    27→}
+    28→
+    29→export default function Home() {
+    30→  const [user, setUser] = useState<UserInfo | null>(null)
+    31→  const [branches, setBranches] = useState<Branch[]>([])
+    32→  const [loading, setLoading] = useState(true)
+    33→  const [loginLoading, setLoginLoading] = useState(false)
+    34→  const [username, setUsername] = useState('')
+    35→  const [password, setPassword] = useState('')
+    36→  const [showPassword, setShowPassword] = useState(false)
+    37→  const [updatingId, setUpdatingId] = useState<string | null>(null)
+    38→  const { toast } = useToast()
+    39→
+    40→  const fetchSession = useCallback(async () => {
+    41→    try {
+    42→      const res = await fetch('/api/auth/session')
+    43→      if (res.ok) {
+    44→        const data = await res.json()
+    45→        setUser(data.user)
+    46→      }
+    47→    } catch {
+    48→      // not logged in
+    49→    } finally {
+    50→      setLoading(false)
+    51→    }
+    52→  }, [])
+    53→
+    54→  const fetchBranches = useCallback(async () => {
+    55→    try {
+    56→      const res = await fetch('/api/branches')
+    57→      if (res.ok) {
+    58→        const data = await res.json()
+    59→        setBranches(data.branches)
+    60→      }
+    61→    } catch {
+    62→      toast({ title: 'خطا', description: 'دریافت اطلاعات شعب با مشکل مواجه شد', variant: 'destructive' })
+    63→    }
+    64→  }, [toast])
+    65→
+    66→  useEffect(() => {
+    67→    fetchSession()
+    68→  }, [fetchSession])
+    69→
+    70→  useEffect(() => {
+    71→    if (user) {
+    72→      fetchBranches()
+    73→    }
+    74→  }, [user, fetchBranches])
+    75→
+    76→  const handleLogin = async (e: React.FormEvent) => {
+    77→    e.preventDefault()
+    78→    setLoginLoading(true)
+    79→    try {
+    80→      const res = await fetch('/api/auth/login', {
+    81→        method: 'POST',
+    82→        headers: { 'Content-Type': 'application/json' },
+    83→        body: JSON.stringify({ username, password }),
+    84→      })
+    85→      const data = await res.json()
+    86→      if (res.ok) {
+    87→        setUser(data.user)
+    88→        setUsername('')
+    89→        setPassword('')
+    90→      } else {
+    91→        toast({ title: 'خطا', description: data.error, variant: 'destructive' })
+    92→      }
+    93→    } catch {
+    94→      toast({ title: 'خطا', description: 'خطا در ارتباط با سرور', variant: 'destructive' })
+    95→    } finally {
+    96→      setLoginLoading(false)
+    97→    }
+    98→  }
+    99→
+   100→  const handleLogout = async () => {
+   101→    await fetch('/api/auth/logout', { method: 'POST' })
+   102→    setUser(null)
+   103→    setBranches([])
+   104→  }
+   105→
+   106→  const toggleTargetSent = async (branch: Branch) => {
+   107→    if (user?.role !== 'admin') return
+   108→    setUpdatingId(branch.id)
+   109→    try {
+   110→      const res = await fetch(`/api/branches/${branch.id}`, {
+   111→        method: 'PATCH',
+   112→        headers: { 'Content-Type': 'application/json' },
+   113→        body: JSON.stringify({ targetSent: !branch.targetSent }),
+   114→      })
+   115→      if (res.ok) {
+   116→        setBranches((prev) =>
+   117→          prev.map((b) => (b.id === branch.id ? { ...b, targetSent: !b.targetSent } : b))
+   118→        )
+   119→        toast({
+   120→          title: branch.targetSent ? 'تارگت لغو شد' : 'تارگت ارسال شد',
+   121→          description: `${branch.name} — ${branch.targetSent ? 'ارسال لغو گردید' : 'تارگت با موفقیت ارسال شد'}`,
+   122→        })
+   123→      }
+   124→    } catch {
+   125→      toast({ title: 'خطا', description: 'خطا در بروزرسانی', variant: 'destructive' })
+   126→    } finally {
+   127→      setUpdatingId(null)
+   128→    }
+   129→  }
+   130→
+   131→  const autoFill = (role: 'admin' | 'user') => {
+   132→    if (role === 'admin') {
+   133→      setUsername('admin')
+   134→      setPassword('admin123')
+   135→    } else {
+   136→      setUsername('user')
+   137→      setPassword('user123')
+   138→    }
+   139→  }
+   140→
+   141→  if (loading) {
+   142→    return (
+   143→      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
+   144→        <motion.div
+   145→          animate={{ rotate: 360 }}
+   146→          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+   147→        >
+   148→          <Loader2 className="w-8 h-8 text-blue-600" />
+   149→        </motion.div>
+   150→      </div>
+   151→    )
+   152→  }
+   153→
+   154→  if (!user) {
+   155→    return (
+   156→      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" dir="rtl">
+   157→        {/* Animated background shapes */}
+   158→        <div className="absolute inset-0 overflow-hidden">
+   159→          <motion.div
+   160→            className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"
+   161→            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+   162→            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+   163→          />
+   164→          <motion.div
+   165→            className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-sky-500/10 blur-3xl"
+   166→            animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
+   167→            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+   168→          />
+   169→          <motion.div
+   170→            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-blue-400/5 blur-3xl"
+   171→            animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 360] }}
+   172→            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+   173→          />
+   174→          {/* Floating particles */}
+   175→          {[...Array(20)].map((_, i) => (
+   176→            <motion.div
+   177→              key={i}
+   178→              className="absolute w-1 h-1 rounded-full bg-blue-400/30"
+   179→              style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
+   180→              animate={{
+   181→                y: [0, -30, 0],
+   182→                opacity: [0, 1, 0],
+   183→              }}
+   184→              transition={{
+   185→                duration: 3 + Math.random() * 2,
+   186→                repeat: Infinity,
+   187→                delay: Math.random() * 3,
+   188→                ease: 'easeInOut',
+   189→              }}
+   190→            />
+   191→          ))}
+   192→        </div>
+   193→
+   194→        <motion.div
+   195→          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+   196→          animate={{ opacity: 1, y: 0, scale: 1 }}
+   197→          transition={{ duration: 0.6, ease: 'easeOut' }}
+   198→          className="relative z-10 w-full max-w-md px-4"
+   199→        >
+   200→          <Card className="border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl shadow-blue-500/10">
+   201→            <CardHeader className="text-center pb-2 pt-8">
+   202→              <motion.div
+   203→                initial={{ scale: 0 }}
+   204→                animate={{ scale: 1 }}
+   205→                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+   206→                className="mx-auto mb-5 w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-blue-500/20 border border-white/20 overflow-hidden"
+   207→              >
+   208→                <Image
+   209→                  src="/logo.png"
+   210→                  alt="باراکا"
+   211→                  width={64}
+   212→                  height={64}
+   213→                  className="rounded-xl"
+   214→                  priority
+   215→                />
+   216→              </motion.div>
+   217→              <motion.h1
+   218→                initial={{ opacity: 0, y: 10 }}
+   219→                animate={{ opacity: 1, y: 0 }}
+   220→                transition={{ delay: 0.3 }}
+   221→                className="text-xl font-bold text-white leading-relaxed"
+   222→              >
+   223→                سامانه مدیریت ارسال تارگت
+   224→              </motion.h1>
+   225→              <motion.p
+   226→                initial={{ opacity: 0, y: 10 }}
+   227→                animate={{ opacity: 1, y: 0 }}
+   228→                transition={{ delay: 0.35 }}
+   229→                className="text-sm text-blue-400 font-semibold mt-1"
+   230→              >
+   231→                پخش سراسری باراکا
+   232→              </motion.p>
+   233→              <motion.p
+   234→                initial={{ opacity: 0 }}
+   235→                animate={{ opacity: 1 }}
+   236→                transition={{ delay: 0.4 }}
+   237→                className="text-xs text-slate-400 mt-2"
+   238→              >
+   239→                برای ادامه وارد حساب کاربری خود شوید
+   240→              </motion.p>
+   241→            </CardHeader>
+   242→            <CardContent className="pt-4 pb-8 px-6">
+   243→              <form onSubmit={handleLogin} className="space-y-5">
+   244→                <motion.div
+   245→                  initial={{ opacity: 0, x: 20 }}
+   246→                  animate={{ opacity: 1, x: 0 }}
+   247→                  transition={{ delay: 0.4 }}
+   248→                >
+   249→                  <div className="relative">
+   250→                    <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+   251→                    <Input
+   252→                      type="text"
+   253→                      placeholder="نام کاربری"
+   254→                      value={username}
+   255→                      onChange={(e) => setUsername(e.target.value)}
+   256→                      className="pr-10 pl-4 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl"
+   257→                      required
+   258→                    />
+   259→                  </div>
+   260→                </motion.div>
+   261→                <motion.div
+   262→                  initial={{ opacity: 0, x: 20 }}
+   263→                  animate={{ opacity: 1, x: 0 }}
+   264→                  transition={{ delay: 0.5 }}
+   265→                >
+   266→                  <div className="relative">
+   267→                    <Shield className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+   268→                    <Input
+   269→                      type={showPassword ? 'text' : 'password'}
+   270→                      placeholder="رمز عبور"
+   271→                      value={password}
+   272→                      onChange={(e) => setPassword(e.target.value)}
+   273→                      className="pr-10 pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl"
+   274→                      required
+   275→                    />
+   276→                    <button
+   277→                      type="button"
+   278→                      onClick={() => setShowPassword(!showPassword)}
+   279→                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+   280→                    >
+   281→                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+   282→                    </button>
+   283→                  </div>
+   284→                </motion.div>
+   285→                <motion.div
+   286→                  initial={{ opacity: 0, y: 10 }}
+   287→                  animate={{ opacity: 1, y: 0 }}
+   288→                  transition={{ delay: 0.6 }}
+   289→                >
+   290→                  <Button
+   291→                    type="submit"
+   292→                    disabled={loginLoading}
+   293→                    className="w-full h-12 bg-gradient-to-l from-blue-500 to-sky-600 hover:from-blue-600 hover:to-sky-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98]"
+   294→                  >
+   295→                    {loginLoading ? (
+   296→                      <Loader2 className="w-5 h-5 animate-spin" />
+   297→                    ) : (
+   298→                      <>
+   299→                        <LogIn className="w-4 h-4 ml-2" />
+   300→                        ورود به سامانه
+   301→                      </>
+   302→                    )}
+   303→                  </Button>
+   304→                </motion.div>
+   305→              </form>
+   306→
+   307→              {/* Quick fill buttons */}
+   308→              <motion.div
+   309→                initial={{ opacity: 0 }}
+   310→                animate={{ opacity: 1 }}
+   311→                transition={{ delay: 0.8 }}
+   312→                className="mt-6 pt-4 border-t border-white/10"
+   313→              >
+   314→                <p className="text-[11px] text-slate-500 text-center mb-3">ورود سریع</p>
+   315→                <div className="grid grid-cols-2 gap-3">
+   316→                  <motion.button
+   317→                    whileHover={{ scale: 1.03 }}
+   318→                    whileTap={{ scale: 0.97 }}
+   319→                    type="button"
+   320→                    onClick={() => autoFill('admin')}
+   321→                    className="flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/40 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer group"
+   322→                  >
+   323→                    <Shield className="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" />
+   324→                    <span className="text-xs font-medium text-blue-300 group-hover:text-blue-200 transition-colors">کاربر مدیر</span>
+   325→                  </motion.button>
+   326→                  <motion.button
+   327→                    whileHover={{ scale: 1.03 }}
+   328→                    whileTap={{ scale: 0.97 }}
+   329→                    type="button"
+   330→                    onClick={() => autoFill('user')}
+   331→                    className="flex items-center justify-center gap-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/40 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer group"
+   332→                  >
+   333→                    <User className="w-4 h-4 text-sky-400 group-hover:text-sky-300 transition-colors" />
+   334→                    <span className="text-xs font-medium text-sky-300 group-hover:text-sky-200 transition-colors">کاربر عادی</span>
+   335→                  </motion.button>
+   336→                </div>
+   337→              </motion.div>
+   338→            </CardContent>
+   339→          </Card>
+   340→        </motion.div>
+   341→      </div>
+   342→    )
+   343→  }
+   344→
+   345→  // Dashboard - Admin view (table with toggles)
+   346→  if (user.role === 'admin') {
+   347→    return (
+   348→      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50" dir="rtl">
+   349→        {/* Header */}
+   350→        <motion.header
+   351→          initial={{ opacity: 0, y: -20 }}
+   352→          animate={{ opacity: 1, y: 0 }}
+   353→          className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm"
+   354→        >
+   355→          <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+   356→            <div className="flex items-center gap-3">
+   357→              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-md shadow-blue-500/20 overflow-hidden">
+   358→                <Image src="/logo.png" alt="باراکا" width={28} height={28} className="rounded-lg" />
+   359→              </div>
+   360→              <div>
+   361→                <h1 className="font-bold text-slate-800 text-sm sm:text-base">سامانه مدیریت ارسال تارگت</h1>
+   362→                <p className="text-[10px] sm:text-xs text-blue-600 font-medium">پخش سراسری باراکا</p>
+   363→              </div>
+   364→            </div>
+   365→            <div className="flex items-center gap-2 sm:gap-4">
+   366→              <div className="hidden sm:flex items-center gap-2 bg-blue-50 rounded-xl px-3 py-1.5 border border-blue-100">
+   367→                <Shield className="w-3.5 h-3.5 text-blue-600" />
+   368→                <span className="text-xs text-blue-700 font-medium">{user.name}</span>
+   369→                <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium bg-blue-100 text-blue-700 border border-blue-200">
+   370→                  مدیر
+   371→                </span>
+   372→              </div>
+   373→              <Button
+   374→                variant="ghost"
+   375→                size="sm"
+   376→                onClick={handleLogout}
+   377→                className="text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+   378→              >
+   379→                <LogOut className="w-4 h-4 ml-1" />
+   380→                <span className="hidden sm:inline text-xs">خروج</span>
+   381→              </Button>
+   382→            </div>
+   383→          </div>
+   384→        </motion.header>
+   385→
+   386→        {/* Main Content */}
+   387→        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
+   388→          {/* Stats Cards */}
+   389→          <motion.div
+   390→            initial={{ opacity: 0, y: 20 }}
+   391→            animate={{ opacity: 1, y: 0 }}
+   392→            transition={{ delay: 0.1 }}
+   393→            className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8"
+   394→          >
+   395→            <div className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-100 rounded-2xl p-4">
+   396→              <p className="text-xs text-blue-600 font-medium mb-1">کل شعب</p>
+   397→              <p className="text-2xl font-bold text-blue-800">{branches.length}</p>
+   398→            </div>
+   399→            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-2xl p-4">
+   400→              <p className="text-xs text-green-600 font-medium mb-1">ارسال شده</p>
+   401→              <p className="text-2xl font-bold text-green-800">{branches.filter(b => b.targetSent).length}</p>
+   402→            </div>
+   403→            <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 rounded-2xl p-4">
+   404→              <p className="text-xs text-red-500 font-medium mb-1">ارسال نشده</p>
+   405→              <p className="text-2xl font-bold text-red-700">{branches.filter(b => !b.targetSent).length}</p>
+   406→            </div>
+   407→            <div className="bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-100 rounded-2xl p-4">
+   408→              <p className="text-xs text-slate-500 font-medium mb-1">درصد ارسال</p>
+   409→              <p className="text-2xl font-bold text-slate-700">
+   410→                {branches.length ? Math.round((branches.filter(b => b.targetSent).length / branches.length) * 100) : 0}%
+   411→              </p>
+   412→            </div>
+   413→          </motion.div>
+   414→
+   415→          {/* Table */}
+   416→          <motion.div
+   417→            initial={{ opacity: 0, y: 20 }}
+   418→            animate={{ opacity: 1, y: 0 }}
+   419→            transition={{ delay: 0.2 }}
+   420→          >
+   421→            <Card className="border-slate-200/60 shadow-lg shadow-slate-200/30 overflow-hidden rounded-2xl">
+   422→              <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-l from-blue-50/30 to-transparent">
+   423→                <div className="flex items-center justify-between">
+   424→                  <div className="flex items-center gap-2">
+   425→                    <Building2 className="w-4 h-4 text-blue-600" />
+   426→                    <h2 className="font-bold text-slate-800">لیست شعب</h2>
+   427→                  </div>
+   428→                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+   429→                    <Send className="w-3.5 h-3.5" />
+   430→                    <span>وضعیت تارگت ارسال</span>
+   431→                  </div>
+   432→                </div>
+   433→              </div>
+   434→
+   435→              {/* Table Header */}
+   436→              <div className="grid grid-cols-[1fr_140px] sm:grid-cols-[1fr_180px] items-center bg-slate-50/80 border-b border-slate-100 px-6 py-3">
+   437→                <span className="text-xs font-semibold text-slate-500">نام شعبه</span>
+   438→                <span className="text-xs font-semibold text-slate-500 text-center">تارگت ارسال</span>
+   439→              </div>
+   440→
+   441→              {/* Table Body */}
+   442→              <div className="divide-y divide-slate-50">
+   443→                <AnimatePresence>
+   444→                  {branches.map((branch, index) => (
+   445→                    <motion.div
+   446→                      key={branch.id}
+   447→                      initial={{ opacity: 0, x: 20 }}
+   448→                      animate={{ opacity: 1, x: 0 }}
+   449→                      transition={{ delay: 0.05 * index, duration: 0.3 }}
+   450→                      className={`grid grid-cols-[1fr_140px] sm:grid-cols-[1fr_180px] items-center px-6 py-4 transition-colors duration-200 ${
+   451→                        branch.targetSent ? 'bg-blue-50/30' : 'hover:bg-slate-50/50'
+   452→                      }`}
+   453→                    >
+   454→                      <div className="flex items-center gap-3">
+   455→                        <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+   456→                          branch.targetSent ? 'bg-blue-400' : 'bg-slate-300'
+   457→                        }`} />
+   458→                        <span className="font-medium text-slate-700 text-sm">{branch.name}</span>
+   459→                      </div>
+   460→                      <div className="flex justify-center">
+   461→                        <motion.button
+   462→                          whileHover={{ scale: 1.1 }}
+   463→                          whileTap={{ scale: 0.9 }}
+   464→                          onClick={() => toggleTargetSent(branch)}
+   465→                          disabled={updatingId === branch.id}
+   466→                          className={`
+   467→                            relative w-12 h-7 rounded-full transition-all duration-300 ease-out
+   468→                            focus:outline-none focus:ring-2 focus:ring-offset-2
+   469→                            ${branch.targetSent
+   470→                              ? 'bg-gradient-to-l from-blue-400 to-sky-500 shadow-md shadow-blue-500/30 focus:ring-blue-400'
+   471→                              : 'bg-slate-200 shadow-inner focus:ring-slate-300'
+   472→                            }
+   473→                          `}
+   474→                        >
+   475→                          <motion.div
+   476→                            layout
+   477→                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+   478→                            className={`
+   479→                              absolute top-0.5 w-6 h-6 rounded-full flex items-center justify-center
+   480→                              shadow-md transition-all duration-300
+   481→                              ${branch.targetSent
+   482→                                ? 'right-0.5 bg-white'
+   483→                                : 'right-[22px] bg-white'
+   484→                              }
+   485→                            `}
+   486→                          >
+   487→                            {updatingId === branch.id ? (
+   488→                              <Loader2 className="w-3 h-3 animate-spin text-slate-400" />
+   489→                            ) : branch.targetSent ? (
+   490→                              <motion.div
+   491→                                initial={{ scale: 0, rotate: -180 }}
+   492→                                animate={{ scale: 1, rotate: 0 }}
+   493→                                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+   494→                              >
+   495→                                <Check className="w-3.5 h-3.5 text-blue-500 stroke-[3]" />
+   496→                              </motion.div>
+   497→                            ) : (
+   498→                              <motion.div
+   499→                                initial={{ scale: 0, rotate: 180 }}
+   500→                                animate={{ scale: 1, rotate: 0 }}
+   501→                                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+   502→                              >
+   503→                                <X className="w-3.5 h-3.5 text-slate-400 stroke-[3]" />
+   504→                              </motion.div>
+   505→                            )}
+   506→                          </motion.div>
+   507→                        </motion.button>
+   508→                      </div>
+   509→                    </motion.div>
+   510→                  ))}
+   511→                </AnimatePresence>
+   512→              </div>
+   513→            </Card>
+   514→          </motion.div>
+   515→        </main>
+   516→
+   517→        {/* Footer */}
+   518→        <footer className="mt-auto border-t border-slate-100 bg-white/50 backdrop-blur-sm">
+   519→          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+   520→            <p className="text-xs text-slate-400">پخش سراسری باراکا — نسخه ۱.۰</p>
+   521→            <p className="text-xs text-slate-400 flex items-center gap-1">
+   522→              <ChevronLeft className="w-3 h-3" />
+   523→              طراحی شده با ❤️
+   524→            </p>
+   525→          </div>
+   526→        </footer>
+   527→      </div>
+   528→    )
+   529→  }
+   530→
+   531→  // Dashboard - Normal user view (vertical/compact grid)
+   532→  return (
+   533→    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50" dir="rtl">
+   534→      {/* Header */}
+   535→      <motion.header
+   536→        initial={{ opacity: 0, y: -20 }}
+   537→        animate={{ opacity: 1, y: 0 }}
+   538→        className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm"
+   539→      >
+   540→        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+   541→          <div className="flex items-center gap-2.5">
+   542→            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-md shadow-blue-500/20 overflow-hidden">
+   543→              <Image src="/logo.png" alt="باراکا" width={24} height={24} className="rounded-md" />
+   544→            </div>
+   545→            <div>
+   546→              <h1 className="font-bold text-slate-800 text-sm">ارسال تارگت شعب</h1>
+   547→              <p className="text-[10px] text-blue-600 font-medium">پخش سراسری باراکا</p>
+   548→            </div>
+   549→          </div>
+   550→          <div className="flex items-center gap-2">
+   551→            <div className="flex items-center gap-1.5 bg-slate-50 rounded-lg px-2.5 py-1 border border-slate-100">
+   552→              <User className="w-3 h-3 text-slate-500" />
+   553→              <span className="text-[11px] text-slate-600">{user.name}</span>
+   554→            </div>
+   555→            <Button
+   556→              variant="ghost"
+   557→              size="sm"
+   558→              onClick={handleLogout}
+   559→              className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg h-8 w-8 p-0"
+   560→            >
+   561→              <LogOut className="w-3.5 h-3.5" />
+   562→            </Button>
+   563→          </div>
+   564→        </div>
+   565→      </motion.header>
+   566→
+   567→      {/* Main Content */}
+   568→      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-5">
+   569→        {/* Summary bar */}
+   570→        <motion.div
+   571→          initial={{ opacity: 0, y: 10 }}
+   572→          animate={{ opacity: 1, y: 0 }}
+   573→          transition={{ delay: 0.1 }}
+   574→          className="flex items-center gap-3 mb-5"
+   575→        >
+   576→          <div className="flex-1 bg-gradient-to-l from-blue-50 to-sky-50 border border-blue-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
+   577→            <span className="text-xs text-blue-600 font-medium">ارسال شده</span>
+   578→            <span className="text-lg font-bold text-blue-700">{branches.filter(b => b.targetSent).length}</span>
+   579→          </div>
+   580→          <div className="flex-1 bg-gradient-to-l from-red-50 to-rose-50 border border-red-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
+   581→            <span className="text-xs text-red-500 font-medium">ارسال نشده</span>
+   582→            <span className="text-lg font-bold text-red-600">{branches.filter(b => !b.targetSent).length}</span>
+   583→          </div>
+   584→          <div className="flex-1 bg-gradient-to-l from-slate-50 to-gray-50 border border-slate-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
+   585→            <span className="text-xs text-slate-500 font-medium">کل شعب</span>
+   586→            <span className="text-lg font-bold text-slate-700">{branches.length}</span>
+   587→          </div>
+   588→        </motion.div>
+   589→
+   590→        {/* Vertical branch grid */}
+   591→        <motion.div
+   592→          initial={{ opacity: 0, y: 15 }}
+   593→          animate={{ opacity: 1, y: 0 }}
+   594→          transition={{ delay: 0.15 }}
+   595→          className="grid grid-cols-2 sm:grid-cols-3 gap-2.5"
+   596→        >
+   597→          <AnimatePresence>
+   598→            {branches.map((branch, index) => (
+   599→              <motion.div
+   600→                key={branch.id}
+   601→                initial={{ opacity: 0, scale: 0.9 }}
+   602→                animate={{ opacity: 1, scale: 1 }}
+   603→                transition={{ delay: 0.04 * index, duration: 0.3, ease: 'easeOut' }}
+   604→                className={`
+   605→                  relative flex items-center gap-2.5 rounded-xl px-3.5 py-3 border transition-all duration-300
+   606→                  ${branch.targetSent
+   607→                    ? 'bg-blue-50/80 border-blue-200/80 shadow-sm shadow-blue-100/50'
+   608→                    : 'bg-white border-slate-200/70 shadow-sm'
+   609→                  }
+   610→                `}
+   611→              >
+   612→                {/* Icon */}
+   613→                <div className="flex-shrink-0">
+   614→                  {branch.targetSent ? (
+   615→                    <motion.div
+   616→                      initial={{ scale: 0, rotate: -180 }}
+   617→                      animate={{ scale: 1, rotate: 0 }}
+   618→                      transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.04 * index + 0.1 }}
+   619→                      className="w-7 h-7 rounded-lg bg-blue-500 flex items-center justify-center shadow-sm shadow-blue-500/30"
+   620→                    >
+   621→                      <Check className="w-4 h-4 text-white stroke-[3]" />
+   622→                    </motion.div>
+   623→                  ) : (
+   624→                    <motion.div
+   625→                      initial={{ scale: 0, rotate: 180 }}
+   626→                      animate={{ scale: 1, rotate: 0 }}
+   627→                      transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.04 * index + 0.1 }}
+   628→                      className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center shadow-sm shadow-red-500/30"
+   629→                    >
+   630→                      <X className="w-4 h-4 text-white stroke-[3]" />
+   631→                    </motion.div>
+   632→                  )}
+   633→                </div>
+   634→
+   635→                {/* Branch name */}
+   636→                <div className="flex-1 min-w-0">
+   637→                  <p className={`text-sm font-medium truncate ${
+   638→                    branch.targetSent ? 'text-blue-800' : 'text-slate-700'
+   639→                  }`}>
+   640→                    {branch.name}
+   641→                  </p>
+   642→                  <p className={`text-[10px] ${
+   643→                    branch.targetSent ? 'text-blue-500' : 'text-slate-400'
+   644→                  }`}>
+   645→                    {branch.targetSent ? 'ارسال شده' : 'ارسال نشده'}
+   646→                  </p>
+   647→                </div>
+   648→              </motion.div>
+   649→            ))}
+   650→          </AnimatePresence>
+   651→        </motion.div>
+   652→      </main>
+   653→
+   654→      {/* Footer */}
+   655→      <footer className="mt-auto border-t border-slate-100 bg-white/50 backdrop-blur-sm">
+   656→        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+   657→          <p className="text-[11px] text-slate-400">پخش سراسری باراکا</p>
+   658→          <p className="text-[11px] text-slate-400 flex items-center gap-1">
+   659→            <ChevronLeft className="w-3 h-3" />
+   660→            طراحی شده با ❤️
+   661→          </p>
+   662→        </div>
+   663→      </footer>
+   664→    </div>
+   665→  )
+   666→}
+   667→
