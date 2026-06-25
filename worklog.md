@@ -20,3 +20,27 @@ Stage Summary:
 - Admin: admin / admin123 (can toggle target sent)
 - User: user / user123 (read-only view)
 - 12 branches seeded: تهران غرب, تهران شرق, تهران جنوب, تهران هورکا, تهران عمده, اصفهان, گیلان, خراسان رضوی, فارس, البرز, بابل, خوزستان
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: UI improvements - Persian font, title change, auto-fill buttons, compact user view
+
+Work Log:
+- Replaced Geist font with Vazirmatn (beautiful Persian font, similar to IranSans) via next/font/google
+- Updated layout.tsx: lang="fa", dir="rtl", Vazirmatn font with arabic+latin subsets
+- Changed page title to "سامانه مدیریت ارسال تارگت — پخش سراسری باراکا"
+- Updated login page title to "سامانه مدیریت ارسال تارگت" + subtitle "پخش سراسری باراکا"
+- Added "ورود سریع" (Quick Login) section with two clickable buttons: "کاربر مدیر" and "کاربر عادی"
+- Clicking buttons auto-fills username/password fields
+- Redesigned normal user dashboard: vertical/compact grid layout (2 cols mobile, 3 cols desktop)
+- Each branch shows as a compact card with large check/cross icon + branch name + status text
+- Admin view remains as table with toggle switches
+- Verified all functionality with Agent Browser - no errors
+
+Stage Summary:
+- Vazirmatn Persian font applied globally
+- Auto-fill buttons work for both admin and user
+- User view is now compact vertical grid - see all branches at a glance
+- Admin view unchanged (table + toggles)
+- All verified with Agent Browser

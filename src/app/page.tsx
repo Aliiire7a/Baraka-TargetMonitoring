@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LogIn, LogOut, Shield, User, Check, X, Loader2,
-  Building2, Send, ChevronLeft, Eye, EyeOff, Sparkles
+  Building2, Send, ChevronLeft, Eye, EyeOff, Sparkles,
+  CircleCheckBig, CircleX
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -127,6 +128,16 @@ export default function Home() {
     }
   }
 
+  const autoFill = (role: 'admin' | 'user') => {
+    if (role === 'admin') {
+      setUsername('admin')
+      setPassword('admin123')
+    } else {
+      setUsername('user')
+      setPassword('user123')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -200,15 +211,23 @@ export default function Home() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-2xl font-bold text-white"
+                className="text-xl font-bold text-white leading-relaxed"
               >
-                سامانه مدیریت شعب
+                سامانه مدیریت ارسال تارگت
               </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="text-sm text-emerald-400 font-semibold mt-1"
+              >
+                پخش سراسری باراکا
+              </motion.p>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-sm text-slate-400 mt-2"
+                className="text-xs text-slate-400 mt-2"
               >
                 برای ادامه وارد حساب کاربری خود شوید
               </motion.p>
@@ -277,21 +296,36 @@ export default function Home() {
                   </Button>
                 </motion.div>
               </form>
+
+              {/* Quick fill buttons */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
                 className="mt-6 pt-4 border-t border-white/10"
               >
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="bg-white/5 rounded-lg p-3 text-center border border-white/5">
-                    <p className="text-slate-500 mb-1">کاربر مدیر</p>
-                    <p className="text-emerald-400 font-mono font-bold">admin</p>
-                  </div>
-                  <div className="bg-white/5 rounded-lg p-3 text-center border border-white/5">
-                    <p className="text-slate-500 mb-1">کاربر عادی</p>
-                    <p className="text-teal-400 font-mono font-bold">user</p>
-                  </div>
+                <p className="text-[11px] text-slate-500 text-center mb-3">ورود سریع</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    type="button"
+                    onClick={() => autoFill('admin')}
+                    className="flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/40 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer group"
+                  >
+                    <Shield className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                    <span className="text-xs font-medium text-emerald-300 group-hover:text-emerald-200 transition-colors">کاربر مدیر</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    type="button"
+                    onClick={() => autoFill('user')}
+                    className="flex items-center justify-center gap-2 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/20 hover:border-teal-500/40 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer group"
+                  >
+                    <User className="w-4 h-4 text-teal-400 group-hover:text-teal-300 transition-colors" />
+                    <span className="text-xs font-medium text-teal-300 group-hover:text-teal-200 transition-colors">کاربر عادی</span>
+                  </motion.button>
                 </div>
               </motion.div>
             </CardContent>
@@ -301,130 +335,122 @@ export default function Home() {
     )
   }
 
-  // Dashboard
-  return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50" dir="rtl">
-      {/* Header */}
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm"
-      >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-slate-800 text-sm sm:text-base">سامانه مدیریت شعب</h1>
-              <p className="text-[10px] sm:text-xs text-slate-400">پیگیری وضعیت تارگت ارسال</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="hidden sm:flex items-center gap-2 bg-slate-50 rounded-xl px-3 py-1.5 border border-slate-100">
-              {user.role === 'admin' ? (
-                <Shield className="w-3.5 h-3.5 text-emerald-600" />
-              ) : (
-                <User className="w-3.5 h-3.5 text-slate-500" />
-              )}
-              <span className="text-xs text-slate-600">{user.name}</span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${
-                user.role === 'admin'
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'bg-slate-100 text-slate-600 border border-slate-200'
-              }`}>
-                {user.role === 'admin' ? 'مدیر' : 'کاربر'}
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
-            >
-              <LogOut className="w-4 h-4 ml-1" />
-              <span className="hidden sm:inline text-xs">خروج</span>
-            </Button>
-          </div>
-        </div>
-      </motion.header>
-
-      {/* Main Content */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+  // Dashboard - Admin view (table with toggles)
+  if (user.role === 'admin') {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50" dir="rtl">
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8"
+          className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm"
         >
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-4">
-            <p className="text-xs text-emerald-600 font-medium mb-1">کل شعب</p>
-            <p className="text-2xl font-bold text-emerald-800">{branches.length}</p>
-          </div>
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-2xl p-4">
-            <p className="text-xs text-green-600 font-medium mb-1">ارسال شده</p>
-            <p className="text-2xl font-bold text-green-800">{branches.filter(b => b.targetSent).length}</p>
-          </div>
-          <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 rounded-2xl p-4">
-            <p className="text-xs text-red-500 font-medium mb-1">ارسال نشده</p>
-            <p className="text-2xl font-bold text-red-700">{branches.filter(b => !b.targetSent).length}</p>
-          </div>
-          <div className="bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-100 rounded-2xl p-4">
-            <p className="text-xs text-slate-500 font-medium mb-1">درصد ارسال</p>
-            <p className="text-2xl font-bold text-slate-700">
-              {branches.length ? Math.round((branches.filter(b => b.targetSent).length / branches.length) * 100) : 0}%
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="border-slate-200/60 shadow-lg shadow-slate-200/30 overflow-hidden rounded-2xl">
-            <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-l from-slate-50/50 to-transparent">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-emerald-600" />
-                  <h2 className="font-bold text-slate-800">لیست شعب</h2>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                  <Send className="w-3.5 h-3.5" />
-                  <span>وضعیت تارگت ارسال</span>
-                </div>
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
+                <Building2 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="font-bold text-slate-800 text-sm sm:text-base">سامانه مدیریت ارسال تارگت</h1>
+                <p className="text-[10px] sm:text-xs text-emerald-600 font-medium">پخش سراسری باراکا</p>
               </div>
             </div>
-
-            {/* Table Header */}
-            <div className="grid grid-cols-[1fr_140px] sm:grid-cols-[1fr_180px] items-center bg-slate-50/80 border-b border-slate-100 px-6 py-3">
-              <span className="text-xs font-semibold text-slate-500">نام شعبه</span>
-              <span className="text-xs font-semibold text-slate-500 text-center">تارگت ارسال</span>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="hidden sm:flex items-center gap-2 bg-emerald-50 rounded-xl px-3 py-1.5 border border-emerald-100">
+                <Shield className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-xs text-emerald-700 font-medium">{user.name}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+                  مدیر
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+              >
+                <LogOut className="w-4 h-4 ml-1" />
+                <span className="hidden sm:inline text-xs">خروج</span>
+              </Button>
             </div>
+          </div>
+        </motion.header>
 
-            {/* Table Body */}
-            <div className="divide-y divide-slate-50">
-              <AnimatePresence>
-                {branches.map((branch, index) => (
-                  <motion.div
-                    key={branch.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 * index, duration: 0.3 }}
-                    className={`grid grid-cols-[1fr_140px] sm:grid-cols-[1fr_180px] items-center px-6 py-4 transition-colors duration-200 ${
-                      branch.targetSent ? 'bg-emerald-50/30' : 'hover:bg-slate-50/50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                        branch.targetSent ? 'bg-emerald-400' : 'bg-slate-300'
-                      }`} />
-                      <span className="font-medium text-slate-700 text-sm">{branch.name}</span>
-                    </div>
-                    <div className="flex justify-center">
-                      {user.role === 'admin' ? (
+        {/* Main Content */}
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
+          {/* Stats Cards */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8"
+          >
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-4">
+              <p className="text-xs text-emerald-600 font-medium mb-1">کل شعب</p>
+              <p className="text-2xl font-bold text-emerald-800">{branches.length}</p>
+            </div>
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-2xl p-4">
+              <p className="text-xs text-green-600 font-medium mb-1">ارسال شده</p>
+              <p className="text-2xl font-bold text-green-800">{branches.filter(b => b.targetSent).length}</p>
+            </div>
+            <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 rounded-2xl p-4">
+              <p className="text-xs text-red-500 font-medium mb-1">ارسال نشده</p>
+              <p className="text-2xl font-bold text-red-700">{branches.filter(b => !b.targetSent).length}</p>
+            </div>
+            <div className="bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-100 rounded-2xl p-4">
+              <p className="text-xs text-slate-500 font-medium mb-1">درصد ارسال</p>
+              <p className="text-2xl font-bold text-slate-700">
+                {branches.length ? Math.round((branches.filter(b => b.targetSent).length / branches.length) * 100) : 0}%
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="border-slate-200/60 shadow-lg shadow-slate-200/30 overflow-hidden rounded-2xl">
+              <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-l from-slate-50/50 to-transparent">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-emerald-600" />
+                    <h2 className="font-bold text-slate-800">لیست شعب</h2>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                    <Send className="w-3.5 h-3.5" />
+                    <span>وضعیت تارگت ارسال</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Table Header */}
+              <div className="grid grid-cols-[1fr_140px] sm:grid-cols-[1fr_180px] items-center bg-slate-50/80 border-b border-slate-100 px-6 py-3">
+                <span className="text-xs font-semibold text-slate-500">نام شعبه</span>
+                <span className="text-xs font-semibold text-slate-500 text-center">تارگت ارسال</span>
+              </div>
+
+              {/* Table Body */}
+              <div className="divide-y divide-slate-50">
+                <AnimatePresence>
+                  {branches.map((branch, index) => (
+                    <motion.div
+                      key={branch.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.05 * index, duration: 0.3 }}
+                      className={`grid grid-cols-[1fr_140px] sm:grid-cols-[1fr_180px] items-center px-6 py-4 transition-colors duration-200 ${
+                        branch.targetSent ? 'bg-emerald-50/30' : 'hover:bg-slate-50/50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                          branch.targetSent ? 'bg-emerald-400' : 'bg-slate-300'
+                        }`} />
+                        <span className="font-medium text-slate-700 text-sm">{branch.name}</span>
+                      </div>
+                      <div className="flex justify-center">
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
@@ -472,59 +498,157 @@ export default function Home() {
                             )}
                           </motion.div>
                         </motion.button>
-                      ) : (
-                        // Read-only for normal user
-                        <motion.div
-                          initial={{ scale: 0.8 }}
-                          animate={{ scale: 1 }}
-                          className={`
-                            inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
-                            transition-colors duration-300
-                            ${branch.targetSent
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-red-50 text-red-600 border border-red-200'
-                            }
-                          `}
-                        >
-                          {branch.targetSent ? (
-                            <>
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                              >
-                                <Check className="w-3 h-3 stroke-[3]" />
-                              </motion.div>
-                              ارسال شده
-                            </>
-                          ) : (
-                            <>
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                              >
-                                <X className="w-3 h-3 stroke-[3]" />
-                              </motion.div>
-                              ارسال نشده
-                            </>
-                          )}
-                        </motion.div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </Card>
+          </motion.div>
+        </main>
+
+        {/* Footer */}
+        <footer className="mt-auto border-t border-slate-100 bg-white/50 backdrop-blur-sm">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <p className="text-xs text-slate-400">پخش سراسری باراکا — نسخه ۱.۰</p>
+            <p className="text-xs text-slate-400 flex items-center gap-1">
+              <ChevronLeft className="w-3 h-3" />
+              طراحی شده با ❤️
+            </p>
+          </div>
+        </footer>
+      </div>
+    )
+  }
+
+  // Dashboard - Normal user view (vertical/compact grid)
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50" dir="rtl">
+      {/* Header */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm"
+      >
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
+              <Building2 className="w-4 h-4 text-white" />
             </div>
-          </Card>
+            <div>
+              <h1 className="font-bold text-slate-800 text-sm">ارسال تارگت شعب</h1>
+              <p className="text-[10px] text-emerald-600 font-medium">پخش سراسری باراکا</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-slate-50 rounded-lg px-2.5 py-1 border border-slate-100">
+              <User className="w-3 h-3 text-slate-500" />
+              <span className="text-[11px] text-slate-600">{user.name}</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg h-8 w-8 p-0"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        </div>
+      </motion.header>
+
+      {/* Main Content */}
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-5">
+        {/* Summary bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex items-center gap-3 mb-5"
+        >
+          <div className="flex-1 bg-gradient-to-l from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
+            <span className="text-xs text-emerald-600 font-medium">ارسال شده</span>
+            <span className="text-lg font-bold text-emerald-700">{branches.filter(b => b.targetSent).length}</span>
+          </div>
+          <div className="flex-1 bg-gradient-to-l from-red-50 to-rose-50 border border-red-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
+            <span className="text-xs text-red-500 font-medium">ارسال نشده</span>
+            <span className="text-lg font-bold text-red-600">{branches.filter(b => !b.targetSent).length}</span>
+          </div>
+          <div className="flex-1 bg-gradient-to-l from-slate-50 to-gray-50 border border-slate-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">کل شعب</span>
+            <span className="text-lg font-bold text-slate-700">{branches.length}</span>
+          </div>
+        </motion.div>
+
+        {/* Vertical branch grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="grid grid-cols-2 sm:grid-cols-3 gap-2.5"
+        >
+          <AnimatePresence>
+            {branches.map((branch, index) => (
+              <motion.div
+                key={branch.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.04 * index, duration: 0.3, ease: 'easeOut' }}
+                className={`
+                  relative flex items-center gap-2.5 rounded-xl px-3.5 py-3 border transition-all duration-300
+                  ${branch.targetSent
+                    ? 'bg-emerald-50/80 border-emerald-200/80 shadow-sm shadow-emerald-100/50'
+                    : 'bg-white border-slate-150 border-slate-200/70 shadow-sm'
+                  }
+                `}
+              >
+                {/* Icon */}
+                <div className="flex-shrink-0">
+                  {branch.targetSent ? (
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.04 * index + 0.1 }}
+                      className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-sm shadow-emerald-500/30"
+                    >
+                      <Check className="w-4 h-4 text-white stroke-[3]" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ scale: 0, rotate: 180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.04 * index + 0.1 }}
+                      className="w-7 h-7 rounded-lg bg-red-500 flex items-center justify-center shadow-sm shadow-red-500/30"
+                    >
+                      <X className="w-4 h-4 text-white stroke-[3]" />
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Branch name */}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium truncate ${
+                    branch.targetSent ? 'text-emerald-800' : 'text-slate-700'
+                  }`}>
+                    {branch.name}
+                  </p>
+                  <p className={`text-[10px] ${
+                    branch.targetSent ? 'text-emerald-500' : 'text-slate-400'
+                  }`}>
+                    {branch.targetSent ? 'ارسال شده' : 'ارسال نشده'}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
       </main>
 
       {/* Footer */}
       <footer className="mt-auto border-t border-slate-100 bg-white/50 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <p className="text-xs text-slate-400">سامانه مدیریت شعب — نسخه ۱.۰</p>
-          <p className="text-xs text-slate-400 flex items-center gap-1">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <p className="text-[11px] text-slate-400">پخش سراسری باراکا</p>
+          <p className="text-[11px] text-slate-400 flex items-center gap-1">
             <ChevronLeft className="w-3 h-3" />
             طراحی شده با ❤️
           </p>
