@@ -354,9 +354,7 @@ export default function Home() {
         >
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-md shadow-blue-500/20 overflow-hidden p-0.5">
-                <Image src="/logo.png" alt="باراکا" width={32} height={32} className="rounded-lg object-contain" />
-              </div>
+              <Image src="/logo-small.png" alt="باراکا" width={36} height={36} className="rounded-lg" />
               <div>
                 <h1 className="font-bold text-slate-800 text-sm sm:text-base">سامانه مدیریت ارسال تارگت</h1>
                 <p className="text-[10px] sm:text-xs text-blue-600 font-medium">پخش سراسری باراکا</p>
@@ -539,9 +537,7 @@ export default function Home() {
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-md shadow-blue-500/20 overflow-hidden p-0.5">
-              <Image src="/logo.png" alt="باراکا" width={28} height={28} className="rounded-md object-contain" />
-            </div>
+            <Image src="/logo-small.png" alt="باراکا" width={32} height={32} className="rounded-lg" />
             <div>
               <h1 className="font-bold text-slate-800 text-sm">ارسال تارگت شعب</h1>
               <p className="text-[10px] text-blue-600 font-medium">پخش سراسری باراکا</p>
