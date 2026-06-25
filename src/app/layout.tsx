@@ -13,7 +13,11 @@ export const metadata: Metadata = {
   title: "سامانه مدیریت ارسال تارگت — پخش سراسری باراکا",
   description: "سامانه مدیریت ارسال تارگت شعب پخش سراسری باراکا",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
 };
 

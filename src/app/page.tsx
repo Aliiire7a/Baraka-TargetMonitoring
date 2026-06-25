@@ -4,13 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LogIn, LogOut, Shield, User, Check, X, Loader2,
-  Building2, Send, ChevronLeft, Eye, EyeOff, Sparkles,
-  CircleCheckBig, CircleX
+  Building2, Send, ChevronLeft, Eye, EyeOff
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
+import Image from 'next/image'
 
 interface UserInfo {
   id: string
@@ -145,7 +145,7 @@ export default function Home() {
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
         >
-          <Loader2 className="w-8 h-8 text-emerald-600" />
+          <Loader2 className="w-8 h-8 text-blue-600" />
         </motion.div>
       </div>
     )
@@ -153,21 +153,21 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900" dir="rtl">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" dir="rtl">
         {/* Animated background shapes */}
         <div className="absolute inset-0 overflow-hidden">
           <motion.div
-            className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-emerald-500/10 blur-3xl"
+            className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"
             animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-teal-500/10 blur-3xl"
+            className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-sky-500/10 blur-3xl"
             animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-emerald-400/5 blur-3xl"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-blue-400/5 blur-3xl"
             animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 360] }}
             transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
           />
@@ -175,7 +175,7 @@ export default function Home() {
           {[...Array(20)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-1 h-1 rounded-full bg-emerald-400/30"
+              className="absolute w-1 h-1 rounded-full bg-blue-400/30"
               style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }}
               animate={{
                 y: [0, -30, 0],
@@ -197,15 +197,22 @@ export default function Home() {
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="relative z-10 w-full max-w-md px-4"
         >
-          <Card className="border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl shadow-emerald-500/10">
+          <Card className="border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl shadow-blue-500/10">
             <CardHeader className="text-center pb-2 pt-8">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-                className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/30"
+                className="mx-auto mb-5 w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-blue-500/20 border border-white/20 overflow-hidden"
               >
-                <Sparkles className="w-8 h-8 text-white" />
+                <Image
+                  src="/logo.png"
+                  alt="باراکا"
+                  width={64}
+                  height={64}
+                  className="rounded-xl"
+                  priority
+                />
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
@@ -219,7 +226,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35 }}
-                className="text-sm text-emerald-400 font-semibold mt-1"
+                className="text-sm text-blue-400 font-semibold mt-1"
               >
                 پخش سراسری باراکا
               </motion.p>
@@ -246,7 +253,7 @@ export default function Home() {
                       placeholder="نام کاربری"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="pr-10 pl-4 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20 rounded-xl"
+                      className="pr-10 pl-4 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl"
                       required
                     />
                   </div>
@@ -263,7 +270,7 @@ export default function Home() {
                       placeholder="رمز عبور"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pr-10 pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-emerald-500/20 rounded-xl"
+                      className="pr-10 pl-10 h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl"
                       required
                     />
                     <button
@@ -283,7 +290,7 @@ export default function Home() {
                   <Button
                     type="submit"
                     disabled={loginLoading}
-                    className="w-full h-12 bg-gradient-to-l from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium rounded-xl shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full h-12 bg-gradient-to-l from-blue-500 to-sky-600 hover:from-blue-600 hover:to-sky-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-300 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     {loginLoading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -311,20 +318,20 @@ export default function Home() {
                     whileTap={{ scale: 0.97 }}
                     type="button"
                     onClick={() => autoFill('admin')}
-                    className="flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/40 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer group"
+                    className="flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/40 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer group"
                   >
-                    <Shield className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-                    <span className="text-xs font-medium text-emerald-300 group-hover:text-emerald-200 transition-colors">کاربر مدیر</span>
+                    <Shield className="w-4 h-4 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                    <span className="text-xs font-medium text-blue-300 group-hover:text-blue-200 transition-colors">کاربر مدیر</span>
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     type="button"
                     onClick={() => autoFill('user')}
-                    className="flex items-center justify-center gap-2 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/20 hover:border-teal-500/40 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer group"
+                    className="flex items-center justify-center gap-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/40 rounded-xl px-4 py-3 transition-all duration-200 cursor-pointer group"
                   >
-                    <User className="w-4 h-4 text-teal-400 group-hover:text-teal-300 transition-colors" />
-                    <span className="text-xs font-medium text-teal-300 group-hover:text-teal-200 transition-colors">کاربر عادی</span>
+                    <User className="w-4 h-4 text-sky-400 group-hover:text-sky-300 transition-colors" />
+                    <span className="text-xs font-medium text-sky-300 group-hover:text-sky-200 transition-colors">کاربر عادی</span>
                   </motion.button>
                 </div>
               </motion.div>
@@ -347,19 +354,19 @@ export default function Home() {
         >
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
-                <Building2 className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-md shadow-blue-500/20 overflow-hidden">
+                <Image src="/logo.png" alt="باراکا" width={28} height={28} className="rounded-lg" />
               </div>
               <div>
                 <h1 className="font-bold text-slate-800 text-sm sm:text-base">سامانه مدیریت ارسال تارگت</h1>
-                <p className="text-[10px] sm:text-xs text-emerald-600 font-medium">پخش سراسری باراکا</p>
+                <p className="text-[10px] sm:text-xs text-blue-600 font-medium">پخش سراسری باراکا</p>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="hidden sm:flex items-center gap-2 bg-emerald-50 rounded-xl px-3 py-1.5 border border-emerald-100">
-                <Shield className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-xs text-emerald-700 font-medium">{user.name}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
+              <div className="hidden sm:flex items-center gap-2 bg-blue-50 rounded-xl px-3 py-1.5 border border-blue-100">
+                <Shield className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-xs text-blue-700 font-medium">{user.name}</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md font-medium bg-blue-100 text-blue-700 border border-blue-200">
                   مدیر
                 </span>
               </div>
@@ -385,9 +392,9 @@ export default function Home() {
             transition={{ delay: 0.1 }}
             className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8"
           >
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-4">
-              <p className="text-xs text-emerald-600 font-medium mb-1">کل شعب</p>
-              <p className="text-2xl font-bold text-emerald-800">{branches.length}</p>
+            <div className="bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-100 rounded-2xl p-4">
+              <p className="text-xs text-blue-600 font-medium mb-1">کل شعب</p>
+              <p className="text-2xl font-bold text-blue-800">{branches.length}</p>
             </div>
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-2xl p-4">
               <p className="text-xs text-green-600 font-medium mb-1">ارسال شده</p>
@@ -412,10 +419,10 @@ export default function Home() {
             transition={{ delay: 0.2 }}
           >
             <Card className="border-slate-200/60 shadow-lg shadow-slate-200/30 overflow-hidden rounded-2xl">
-              <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-l from-slate-50/50 to-transparent">
+              <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-l from-blue-50/30 to-transparent">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-emerald-600" />
+                    <Building2 className="w-4 h-4 text-blue-600" />
                     <h2 className="font-bold text-slate-800">لیست شعب</h2>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-slate-400">
@@ -441,12 +448,12 @@ export default function Home() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.05 * index, duration: 0.3 }}
                       className={`grid grid-cols-[1fr_140px] sm:grid-cols-[1fr_180px] items-center px-6 py-4 transition-colors duration-200 ${
-                        branch.targetSent ? 'bg-emerald-50/30' : 'hover:bg-slate-50/50'
+                        branch.targetSent ? 'bg-blue-50/30' : 'hover:bg-slate-50/50'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                          branch.targetSent ? 'bg-emerald-400' : 'bg-slate-300'
+                          branch.targetSent ? 'bg-blue-400' : 'bg-slate-300'
                         }`} />
                         <span className="font-medium text-slate-700 text-sm">{branch.name}</span>
                       </div>
@@ -460,7 +467,7 @@ export default function Home() {
                             relative w-12 h-7 rounded-full transition-all duration-300 ease-out
                             focus:outline-none focus:ring-2 focus:ring-offset-2
                             ${branch.targetSent
-                              ? 'bg-gradient-to-l from-emerald-400 to-teal-500 shadow-md shadow-emerald-500/30 focus:ring-emerald-400'
+                              ? 'bg-gradient-to-l from-blue-400 to-sky-500 shadow-md shadow-blue-500/30 focus:ring-blue-400'
                               : 'bg-slate-200 shadow-inner focus:ring-slate-300'
                             }
                           `}
@@ -485,7 +492,7 @@ export default function Home() {
                                 animate={{ scale: 1, rotate: 0 }}
                                 transition={{ type: 'spring', stiffness: 300, damping: 15 }}
                               >
-                                <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" />
+                                <Check className="w-3.5 h-3.5 text-blue-500 stroke-[3]" />
                               </motion.div>
                             ) : (
                               <motion.div
@@ -532,12 +539,12 @@ export default function Home() {
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
-              <Building2 className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-md shadow-blue-500/20 overflow-hidden">
+              <Image src="/logo.png" alt="باراکا" width={24} height={24} className="rounded-md" />
             </div>
             <div>
               <h1 className="font-bold text-slate-800 text-sm">ارسال تارگت شعب</h1>
-              <p className="text-[10px] text-emerald-600 font-medium">پخش سراسری باراکا</p>
+              <p className="text-[10px] text-blue-600 font-medium">پخش سراسری باراکا</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -566,9 +573,9 @@ export default function Home() {
           transition={{ delay: 0.1 }}
           className="flex items-center gap-3 mb-5"
         >
-          <div className="flex-1 bg-gradient-to-l from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
-            <span className="text-xs text-emerald-600 font-medium">ارسال شده</span>
-            <span className="text-lg font-bold text-emerald-700">{branches.filter(b => b.targetSent).length}</span>
+          <div className="flex-1 bg-gradient-to-l from-blue-50 to-sky-50 border border-blue-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
+            <span className="text-xs text-blue-600 font-medium">ارسال شده</span>
+            <span className="text-lg font-bold text-blue-700">{branches.filter(b => b.targetSent).length}</span>
           </div>
           <div className="flex-1 bg-gradient-to-l from-red-50 to-rose-50 border border-red-100 rounded-xl px-4 py-2.5 flex items-center justify-between">
             <span className="text-xs text-red-500 font-medium">ارسال نشده</span>
@@ -597,8 +604,8 @@ export default function Home() {
                 className={`
                   relative flex items-center gap-2.5 rounded-xl px-3.5 py-3 border transition-all duration-300
                   ${branch.targetSent
-                    ? 'bg-emerald-50/80 border-emerald-200/80 shadow-sm shadow-emerald-100/50'
-                    : 'bg-white border-slate-150 border-slate-200/70 shadow-sm'
+                    ? 'bg-blue-50/80 border-blue-200/80 shadow-sm shadow-blue-100/50'
+                    : 'bg-white border-slate-200/70 shadow-sm'
                   }
                 `}
               >
@@ -609,7 +616,7 @@ export default function Home() {
                       initial={{ scale: 0, rotate: -180 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.04 * index + 0.1 }}
-                      className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shadow-sm shadow-emerald-500/30"
+                      className="w-7 h-7 rounded-lg bg-blue-500 flex items-center justify-center shadow-sm shadow-blue-500/30"
                     >
                       <Check className="w-4 h-4 text-white stroke-[3]" />
                     </motion.div>
@@ -628,12 +635,12 @@ export default function Home() {
                 {/* Branch name */}
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium truncate ${
-                    branch.targetSent ? 'text-emerald-800' : 'text-slate-700'
+                    branch.targetSent ? 'text-blue-800' : 'text-slate-700'
                   }`}>
                     {branch.name}
                   </p>
                   <p className={`text-[10px] ${
-                    branch.targetSent ? 'text-emerald-500' : 'text-slate-400'
+                    branch.targetSent ? 'text-blue-500' : 'text-slate-400'
                   }`}>
                     {branch.targetSent ? 'ارسال شده' : 'ارسال نشده'}
                   </p>
