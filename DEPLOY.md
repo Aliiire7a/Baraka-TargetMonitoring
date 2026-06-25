@@ -1,117 +1,347 @@
-# راهنمای Deploy پروژه سامانه باراکا روی ویندوز سرور
+# راهنمای Deploy سامانه باراکا روی ویندوز سرور
+# (قدم به قدم، ریز به ریز)
 
 ---
 
-## قدم ۱: نصب پیش‌نیازها روی ویندوز سرور
+# ═══════════════════════════════════════
+# قدم ۱: نصب Node.js روی ویندوز سرور
+# ═══════════════════════════════════════
 
-### ۱-۱. نصب Node.js
-- از سایت https://nodejs.org نسخه **LTS (20+)** رو دانلود و نصب کنید
-- تیک **"Add to PATH"** رو حتماً بزنید
-- برای بررسی نصب، CMD رو باز کنید:
-```cmd
+1. روی سرور ویندوزت، مرورگر (Internet Explorer یا Edge) رو باز کن
+2. برو به آدرس: https://nodejs.org
+3. دکمه سبز رنگ "20.x.x LTS" رو کلیک کن — فایل .msi دانلود میشه
+4. فایل دانلود شده رو دابل‌کلیک کن
+5. صفحه Welcome → دکمه Next رو بزن
+6. صفحه License Agreement → تیک "I accept..." رو بزن → Next
+7. صفحه Installation Folder → بدون تغییر Next رو بزن
+8. صفحه Custom Setup → مطمئن شو تیک "Node.js runtime" و "npm package manager" و "Add to PATH" خورده → Next
+9. صفحه Tools for Native Modules → تیک "Automatically install the necessary tools" رو بزن → Next
+10. دکمه Install رو بزن
+11. اگر پنجره User Account Control باز شد → Yes رو بزن
+12. صبر کن تا نصب تموم شه → Finish رو بزن
+
+### بررسی نصب:
+- کلید Windows + R رو بزن → تایپ کن `cmd` → Enter
+- توی سیاه‌چاله (Command Prompt) تایپ کن:
+```
 node --version
+```
+- باید یه شماره مثل `v20.11.0` نشون بده
+
+- بعد تایپ کن:
+```
 npm --version
 ```
+- باید یه شماره مثل `10.2.3` نشون بده
 
-### ۱-۲. نصب Bun
-- PowerShell رو باز کنید و اجرا کنید:
+- CMD رو ببند (تایپ کن `exit`)
+
+
+# ═══════════════════════════════════════
+# قدم ۲: نصب Bun روی ویندوز سرور
+# ═══════════════════════════════════════
+
+1. کلید Windows رو بزن → تایپ کن `PowerShell`
+2. روی "Windows PowerShell" راست‌کلیک کن → "Run as administrator"
+3. اگر پنجره User Account Control باز شد → Yes
+
+4. حالا دستور زیر رو کپی کن و توی PowerShell پیست کن و Enter بزن:
 ```powershell
-powershell -c "irm bun.sh/install.ps1 | iex"
-```
-- یا از سایت https://bun.sh نسخه ویندوز رو دانلود کنید
-- بررسی:
-```cmd
-bun --version
+irm bun.sh/install.ps1 | iex
 ```
 
-### ۱-۳. نصب PM2 (برای اجرای مداوم)
-```cmd
-npm install -g pm2 pm2-windows-startup
-pm2-startup install
+5. صبر کن تا نصب تموم شه (چند ثانیه)
+
+6. PowerShell رو ببند (تایپ کن `exit`)
+
+
+# ═══════════════════════════════════════
+# قدم ۳: نصب PM2 روی ویندوز سرور
+# ═══════════════════════════════════════
+
+1. CMD رو باز کن (Windows + R → `cmd` → Enter)
+2. تایپ کن:
 ```
-
----
-
-## قدم ۲: آپلود پروژه روی سرور
-
-### روش RDP (Remote Desktop):
-1. با RDP وصل بشید به سرور
-2. فولدر پروژه رو از سیستم خودتون **Copy** کنید
-3. روی سرور در مسیر دلخواه **Paste** کنید (مثلاً `C:\baraka-app`)
-
-### روش SCP/SFTP:
-```cmd
-scp -r C:\my-project user@YOUR_SERVER_IP:C:/baraka-app
+npm install -g pm2
 ```
+3. صبر کن تا نصب بشه
+4. بررسی:
+```
+pm2 --version
+```
+5. CMD رو ببند
 
----
 
-## قدم ۳: بیلد پروژه روی سرور
+# ═══════════════════════════════════════
+# قدم ۴: انتقال پروژه به سرور
+# ═══════════════════════════════════════
 
-CMD رو باز کنید:
-```cmd
+### روش ۱: با Remote Desktop (RDP) — راحت‌ترین
+
+1. روی کامپیوتر خودت، کلید Windows + R رو بزن → تایپ کن `mstsc` → Enter
+2. آی‌پی سرور رو وارد کن → Connect
+3. یوزر و پسورد سرور رو وارد کن → OK
+4. حالا تو سرور هستی
+
+5. روی کامپیوتر خودت، فولدر پروژه رو پیدا کن
+   - تمام فایل‌های پروژه رو انتخاب کن (Ctrl+A)
+   - کپی کن (Ctrl+C)
+
+6. برگرد به سرور (پنجره RDP)
+7. فولدر `C:\` رو باز کن
+8. راست‌کلیک → New → Folder → اسمش رو بذار `baraka-app`
+9. وارد فولدر `baraka-app` بشو
+10. راست‌کلیک → Paste (Ctrl+V)
+11. صبر کن تا همه فایل‌ها کپی بشن
+
+### ⚠️ فایل‌هایی که نباید کپی بشن:
+- فولدر `.next` (بعداً روی سرور بیلد میشه)
+- فولدر `node_modules` (بعداً روی سرور نصب میشه)
+- فایل `dev.log`
+
+### روش ۲: با FTP (اگه RDP نداری)
+1. نرم‌افزار FileZilla رو از https://filezilla-project.org دانلود و نصب کن
+2. بازش کن
+3. بالا سمت راست:
+   - Host: آی‌پی سرورت
+   - Username: یوزر سرورت
+   - Password: پسورد سرورت
+   - Port: 22
+4. Quickconnect رو بزن
+5. سمت چپ: فولدر پروژه رو پیدا کن
+6. سمت راست: برو به `C:\baraka-app`
+7. فایل‌ها رو از چپ بکش و بنداز راست (Drag & Drop)
+
+
+# ═══════════════════════════════════════
+# قدم ۵: بیلد پروژه روی سرور
+# ═══════════════════════════════════════
+
+1. CMD رو باز کن (Windows + R → `cmd` → Enter)
+2. برو به فولدر پروژه:
+```
 cd C:\baraka-app
+```
 
+3. نصب وابستگی‌ها:
+```
 bun install
+```
+صبر کن تا تموم بشه (ممکنه ۱-۲ دقیقه طول بکشه)
+
+4. ساخت دیتابیس:
+```
 bun run db:push
+```
+وقتی پرسید "apply changes" → Enter بزن
+
+5. تولید Prisma Client:
+```
 bun run db:generate
+```
+
+6. پر کردن دیتابیس با اطلاعات اولیه:
+```
 bun run prisma/seed.ts
+```
+باید بگه:
+```
+✅ Admin user created
+✅ Regular user created
+✅ Branches created
+```
+
+7. بیلد پروژه:
+```
 bun run build
 ```
+صبر کن تا تموم بشه (ممکنه ۲-۳ دقیقه طول بکشه)
+آخر باید بگه: `✓ Compiled successfully`
 
----
-
-## قدم ۴: اجرای اپلیکیشن
-
-### تست اول:
-```cmd
+8. تست اجرا:
+```
 bun run start
 ```
-بررسی کنید: مرورگر رو باز کنید و بزنید `http://localhost:3000`
-اگر صفحات بارگزاری شد، Ctrl+C بزنید و برید قدم بعد.
+صبر کن تا بگه: `Ready on http://localhost:3000`
 
-### اجرای دائمی با PM2:
-```cmd
+9. مرورگر رو باز کن و برو به: `http://localhost:3000`
+10. باید صفحه لاگین سامانه باراکا رو ببینی ✅
+
+11. اگر کار کرد، برگرد CMD و Ctrl+C بزن تا متوقف بشه
+
+
+# ═══════════════════════════════════════
+# قدم ۶: اجرای دائمی با PM2
+# ═══════════════════════════════════════
+
+### ۶-۱. شروع اپلیکیشن
+
+1. CMD رو باز کن (اگه بسته شده)
+2. برو به فولدر پروژه:
+```
+cd C:\baraka-app
+```
+
+3. اجرا با PM2:
+```
 pm2 start bun --name "baraka-app" -- run start
+```
+
+4. باید جدولی نشون بده که توش:
+   - name: baraka-app
+   - status: online ✅
+
+5. ذخیره تنظیمات:
+```
 pm2 save
 ```
 
-برای بررسی وضعیت:
-```cmd
+### ۶-۲. بررسی وضعیت
+```
 pm2 status
+```
+باید بگه status: online
+
+### ۶-۳. مشاهده لاگ‌ها
+```
 pm2 logs baraka-app
 ```
+برای خروج: Ctrl+C
 
----
+### ۶-۴. ریستارت کردن اپلیکیشن (اگه لازم شد)
+```
+pm2 restart baraka-app
+```
 
-## قدم ۵: تنظیم IIS به عنوان Reverse Proxy
+### ۶-۵. توقف اپلیکیشن
+```
+pm2 stop baraka-app
+```
 
-### ۵-۱. نصب IIS
-1. **Server Manager** رو باز کنید
-2. **Add Roles and Features** → **Web Server (IIS)** رو نصب کنید
-3. تمام زیرمجموعه‌های **Application Development** رو هم نصب کنید
+### ۶-۶. اجرای خودکار بعد از ریستارت سرور
 
-### ۵-۲. نصب Application Request Routing (ARR)
-1. از سایت مایکروسافت دانلود و نصب کنید:
+چون PM2 روی ویندوز خودکار بعد ریستارت اجرا نمیشه، باید یه Scheduled Task بسازی:
+
+1. کلید Windows رو بزن → تایپ کن `Task Scheduler` → Enter
+2. سمت راست، روی "Create Basic Task" کلیک کن
+3. Name: تایپ کن `Baraka PM2 Start` → Next
+4. Trigger: انتخاب کن "When the computer starts" → Next
+5. Action: انتخاب کن "Start a program" → Next
+6. Program/script: تایپ کن `pm2`
+7. Add arguments: تایپ کن `resurrect` → Next
+8. تیک "Open the Properties dialog" رو بزن → Finish
+9. تو پنجره Properties:
+   - تب General → تیک "Run whether user is logged on or not" رو بزن
+   - تب Conditions → تیک "Start the task only if the computer is on AC power" رو **بردار**
+   - OK رو بزن
+   - پسورد ادمین رو وارد کن
+
+10. حالا بعد از هر ریستارت سرور، اپلیکیشن خودکار بالا میاد ✅
+
+
+# ═══════════════════════════════════════
+# قدم ۷: نصب و تنظیم IIS (وب‌سرور ویندوز)
+# ═══════════════════════════════════════
+
+### ۷-۱. فعال‌سازی IIS
+
+1. **Server Manager** رو باز کن (آیکونش تو Taskbar هست یا Start منو سرچ کن)
+2. بالای صفحه، روی **"Manage"** کلیک کن → **"Add Roles and Features"**
+3. صفحه Before You Begin → Next
+4. Installation Type → انتخاب کن **"Role-based or feature-based installation"** → Next
+5. Server Selection → سرورت رو انتخاب کن → Next
+6. Server Roles:
+   - تیک **"Web Server (IIS)"** رو بزن
+   - پنجره‌ای باز میشه که میگه.features هم اضافه بشه → **"Add Features"** رو بزن → Next
+7. Features → بدون تغییر Next رو بزن
+8. Web Server Role (IIS):
+   - سمت چپ **"Role Services"** رو بزن
+   - مطمئن شو اینا تیک خوردن:
+     ✅ Common HTTP Features (همه)
+     ✅ Health and Diagnostics (همه)
+     ✅ Performance (همه)
+     ✅ Security (Request Filtering)
+     ✅ Application Development:
+        ✅ .NET Extensibility 4.8
+        ✅ ASP.NET 4.8
+        ✅ ISAPI Extensions
+        ✅ ISAPI Filters
+   → Next
+9. Confirmation → **Install** رو بزن
+10. صبر کن تا نصب تموم شه → Close
+
+### ۷-۲. بررسی IIS
+- مرورگر رو باز کن → برو به `http://localhost`
+- باید صفحه پیش‌فرض IIS رو ببینی ✅
+
+
+# ═══════════════════════════════════════
+# قدم ۸: نصب URL Rewrite Module برای IIS
+# ═══════════════════════════════════════
+
+1. مرورگر رو باز کن و برو به:
+   https://www.iis.net/downloads/microsoft/url-rewrite
+
+2. دکمه **"Install this extension"** یا **"Download"** رو بزن
+
+3. اگر مایکروسافت اکانت خواست یا Web Platform Installer باز شد:
+   - از طریق Web Platform Installer:
+     - سرچ کن "URL Rewrite"
+     - دکمه Add رو بزن → Install
+
+   - یا مستقیم دانلود:
+     - فایل .msi رو دانلود کن
+     - دابل‌کلیک → Next → Next → Install → Finish
+
+4. بررسی: IIS Manager رو باز کن → یه سایت رو انتخاب کن → سمت راست باید "URL Rewrite" آیکون رو ببینی
+
+
+# ═══════════════════════════════════════
+# قدم ۹: نصب Application Request Routing (ARR)
+# ═══════════════════════════════════════
+
+1. مرورگر رو باز کن و برو به:
    https://www.iis.net/downloads/microsoft/application-request-routing
-2. باز کنید IIS Manager → سرور رو انتخاب کنید → **Application Request Routing Cache**
-3. سمت راست **Server Proxy Settings** → تیک **Enable proxy** رو بزنید → **Apply**
 
-### ۵-۳. نصب URL Rewrite Module
-از سایت مایکروسافت دانلود و نصب کنید:
-https://www.iis.net/downloads/microsoft/url-rewrite
+2. دکمه **"Install this extension"** رو بزن
 
-### ۵-۴. ساخت وب‌سایت در IIS
-1. **IIS Manager** رو باز کنید
-2. راست‌کلیک روی **Sites** → **Add Website**
-   - **Site name**: `BarakaApp`
-   - **Physical path**: `C:\inetpub\baraka` (یه فولدر خالی بسازید)
-   - **Port**: `80`
-   - **Host name**: `yourdomain.com`
-3. **OK** رو بزنید
+3. از طریق Web Platform Installer:
+   - سرچ کن "Application Request Routing"
+   - دکمه Add رو بزن → Install
 
-### ۵-۵. تنظیم Reverse Proxy
-در فولدر `C:\inetpub\baraka` یه فایل به نام `web.config` بسازید:
+   - یا مستقیم دانلود:
+     - فایل .msi رو دانلود کن
+     - دابل‌کلیک → Next → Next → Install → Finish
+
+4. **فعال‌سازی Proxy:**
+   - **IIS Manager** رو باز کن
+   - سمت چپ، روی اسم سرورت کلیک کن (بالای همه)
+   - وسط صفحه، روی **"Application Request Routing Cache"** دابل‌کلیک کن
+   - سمت راست، روی **"Server Proxy Settings..."** کلیک کن
+   - تیک **"Enable proxy"** رو بزن ✅
+   - دکمه **Apply** سمت راست رو بزن
+   - این خیلی مهمه! بدون این، Reverse Proxy کار نمیکنه
+
+
+# ═══════════════════════════════════════
+# قدم ۱۰: ساخت وب‌سایت در IIS
+# ═══════════════════════════════════════
+
+### ۱۰-۱. ساخت فولدر برای IIS
+
+1. File Explorer رو باز کن
+2. برو به `C:\inetpub`
+3. داخلش یه فولدر جدید بساز به اسم `baraka`
+4. داخل فولدر `baraka` یه فایل تکست بساز:
+   - راست‌کلیک → New → Text Document
+   - اسمش رو بذار `web.config`
+   - ⚠️ مراقب باش که اسمش `web.config.txt` نشه! اگه شد، بعداً تغییرش بده
+
+### ۱۰-۲. نوشتن تنظیمات Reverse Proxy
+
+1. فایل `C:\inetpub\baraka\web.config` رو با Notepad باز کن
+2. تمام محتواش رو پاک کن
+3. متن زیر رو کپی و پیست کن:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -133,123 +363,222 @@ https://www.iis.net/downloads/microsoft/url-rewrite
 </configuration>
 ```
 
----
+4. Ctrl+S بزن تا سیو بشه
+5. Notepad رو ببند
 
-## قدم ۶: تنظیم دامین (DNS)
+### ۱۰-۳. اضافه کردن وب‌سایت به IIS
 
-وارد پنل مدیریت دایمتون بشید:
+1. **IIS Manager** رو باز کن:
+   - کلید Windows → تایپ کن `IIS` → Enter
 
-| نوع | نام | مقدار |
-|-----|------|--------|
-| **A** | @ | آی‌پی سرور ویندوز |
-| **A** | www | آی‌پی سرور ویندوز |
+2. سمت چپ، روی **"Sites"** راست‌کلیک کن → **"Add Website..."**
 
-منتظر بشید ۱ تا ۲۴ ساعت تا DNS فعال بشه.
+3. پر کن:
+   - **Site name**: `BarakaApp`
+   - **Physical path**: دکمه `...` رو بزن → برو به `C:\inetpub\baraka` → OK
+   - **Binding**:
+     - Type: `http`
+     - IP Address: `All Unassigned`
+     - Port: `80`
+     - Host name: `yourdomain.com` ← دایمنت رو اینجا بنویس
+   - دکمه **OK** رو بزن
 
----
+4. اگر پیام خطا داد که پورت ۸۰ قبلاً در استفاده‌ست:
+   - اول سایت پیش‌فرض "Default Web Site" رو متوقف کن:
+   - سمت چپ روی "Default Web Site" کلیک کن
+   - سمت راست روی "Stop" کلیک کن
+   - دوباره تلاش کن وب‌سایت جدید بسازی
 
-## قدم ۷: SSL (HTTPS)
 
-### روش ۱: ویندوز با win-acme (رایگان و خودکار)
+# ═══════════════════════════════════════
+# قدم ۱۱: تنظیم DNS دامین
+# ═══════════════════════════════════════
 
-1. دانلود: https://www.win-acme.com/
-2. اکسترکت کنید و `wacs.exe` رو اجرا کنید
-3. گزینه **M** (Full menu) → **2** (Create certificate - IIS binding)
-4. سایت `BarakaApp` رو انتخاب کنید
-5. دایمنت رو وارد کنید
-6. تایید → گواهی SSL خودکار نصب میشه و هر ۶۰ روز تمدید میشه
+1. برو به سایت خرید دایمنت (مثلاً ایرنیک، لیترا، یا هر جا که دایمنت رو خریدی)
 
-### روش ۲: تنظیم دستی پورت ۴۴۳ در IIS
-اگه گواهی SSL خریدید:
-1. IIS Manager → سایت BarakaApp → **Bindings**
-2. **Add** → **https** → پورت **443** → گواهی SSL رو انتخاب کنید
+2. وارد پنل مدیریت دامین بشو
 
----
+3. بخش **"DNS Management"** یا **"مدیریت DNS"** رو پیدا کن
 
-## قدم ۸: فایروال ویندوز
+4. یه رکورد جدید اضافه کن:
+   - نوع (Type): **A**
+   - نام (Name/Host): `@`
+   - مقدار (Value/Address): **آی‌پی سرور ویندوزت** (مثلاً `185.234.56.78`)
+   - TTL: پیش‌فرض رو بذار
 
-پورت‌های ۸۰ و ۴۴۳ رو باز کنید:
+5. یه رکورد دیگه اضافه کن:
+   - نوع (Type): **A**
+   - نام (Name/Host): `www`
+   - مقدار (Value/Address): **آی‌پی سرور ویندوزت** (همون آی‌پی)
+   - TTL: پیش‌فرض رو بذار
 
-### از طریق GUI:
-1. **Windows Firewall with Advanced Security** رو باز کنید
-2. **Inbound Rules** → **New Rule** → **Port** → **TCP**
-3. پورت‌های `80,443` رو وارد کنید → **Allow the connection**
+6. ذخیره کن
 
-### از طریق PowerShell (Run as Admin):
+7. ⏰ صبر کن — معمولاً بین ۱ تا ۲۴ ساعت طول می‌کشه تا DNS فعال بشه
+
+8. برای بررسی:
+   - CMD رو باز کن
+   - تایپ کن: `ping yourdomain.com`
+   - باید آی‌پی سرورت رو نشون بده
+
+
+# ═══════════════════════════════════════
+# قدم ۱۲: باز کردن پورت‌های فایروال
+# ═══════════════════════════════════════
+
+### روش ۱: با PowerShell (سریع‌تر)
+
+1. PowerShell رو باز کن (Run as administrator)
+2. دستورات زیر رو یکی‌یکی اجرا کن:
+
 ```powershell
-New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
-New-NetFirewallRule -DisplayName "HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
+New-NetFirewallRule -DisplayName "Allow HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+New-NetFirewallRule -DisplayName "Allow HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
 ```
 
----
+### روش ۲: با GUI
 
-## قدم ۷: تست نهایی
+1. کلید Windows → تایپ کن `Windows Defender Firewall` → Enter
+2. سمت چپ، روی **"Advanced Settings"** کلیک کن
+3. سمت چپ، روی **"Inbound Rules"** کلیک کن
+4. سمت راست، روی **"New Rule..."** کلیک کن
+5. Rule Type: انتخاب کن **"Port"** → Next
+6. Protocol and Ports:
+   - TCP رو انتخاب کن
+   - Specific local ports: تایپ کن `80,443`
+   → Next
+7. Action: **"Allow the connection"** → Next
+8. Profile: هر سه تیک رو بزن (Domain, Private, Public) → Next
+9. Name: تایپ کن `Allow HTTP and HTTPS` → Finish
 
-مرورگر رو باز کنید:
-```
-http://yourdomain.com
-https://yourdomain.com
-```
 
-باید صفحه لاگین سامانه باراکا رو ببینید! ✅
+# ═══════════════════════════════════════
+# قدم ۱۳: تست بدون SSL
+# ═══════════════════════════════════════
 
----
+حالا باید سایتت کار کنه!
 
-## 🔧 نکات مهم
+1. مرورگر رو باز کن
+2. برو به: `http://yourdomain.com`
+3. باید صفحه لاگین سامانه باراکا رو ببینی ✅
 
-### اجرای خودکار بعد از ریستارت سرور
-PM2 ممکنه بعد از ریستارت ویندوز اجرا نشه. برای حل این مشکل:
+اگه نشد:
+- CMD رو باز کن → `pm2 status` → مطمئن شو status: online هست
+- IIS Manager رو باز کن → مطمئن شو سایت BarakaApp در حال اجراست
+- `ping yourdomain.com` → مطمئن شو DNS درسته
 
-**روش ۱: Scheduled Task**
-1. **Task Scheduler** رو باز کنید
-2. **Create Basic Task**:
-   - نام: `BarakaApp PM2`
-   - Trigger: **When the computer starts**
-   - Action: **Start a program**
-   - Program: `pm2`
-   - Arguments: `resurrect`
-3. **Finish**
 
-**روش ۲: فایل bat در Startup**
-یه فایل `start-baraka.bat` بسازید:
-```bat
-@echo off
-cd C:\baraka-app
-pm2 resurrect
-```
-و یه شورتکات ازش بذارید توی:
-```
-C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
-```
+# ═══════════════════════════════════════
+# قدم ۱۴: نصب SSL (HTTPS) — رایگان
+# ═══════════════════════════════════════
+
+### ۱۴-۱. دانلود win-acme
+
+1. برو به: https://www.win-acme.com/
+2. روی **"Downloads"** کلیک کن
+3. آخرین نسخه رو دانلود کن (فایل .zip)
+4. فایل zip رو اکسترکت کن به فولدر `C:\win-acme`
+
+### ۱۴-۲. اجرای win-acme
+
+1. برو به فولدر `C:\win-acme`
+2. روی فایل `wacs.exe` دابل‌کلیک کن
+   - اگر پنجره Firewall باز شد → Allow access
+
+3. منوی اصلی نمایش داده میشه. این مراحل رو دنبال کن:
+
+   **مرحله ۱:** تایپ کن `M` و Enter بزن (Full menu)
+
+   **مرحله ۲:** تایپ کن `2` و Enter بزن (Create certificate - IIS binding)
+
+   **مرحله ۳:** لیست سایت‌های IIS نشون داده میشه. شماره سایت `BarakaApp` رو وارد کن و Enter بزن
+
+   **مرحله ۴:** برای Host name، دایمنت رو وارد کن (مثلاً `yourdomain.com`) و Enter بزن
+
+   **مرحله ۵:** اگه پرسید دامین دیگه‌ای هم اضافه کنی، تایپ کن `www.yourdomain.com` و Enter بزن
+   بعد تایپ کن `n` (برای نه، دیگه دامین اضافه نمیکنی) و Enter
+
+   **مرحله ۶:** برای validation:
+   - تایپ کن `[http-01]` رو انتخاب کن (معمولاً پیش‌فرضه) و Enter
+
+   **مرحله ۷:** برای Certificate path:
+   - پیش‌فرض رو قبول کن → Enter
+
+   **مرحله ۸:** برای Store:
+   - پیش‌فرض رو قبول کن → Enter
+
+   **مرحله ۹:** برای Installation:
+   - تایپ کن `IIS` رو انتخاب کن → Enter
+
+   **مرحله ۱۰:** تایید نهایی → Enter
+
+4. صبر کن تا گواهی SSL ساخته و نصب بشه ✅
+
+5. حالا اگه ببری به `https://yourdomain.com` باید با HTTPS باز بشه 🔒
+
+### ۱۴-۳. تمدید خودکار SSL
+
+win-acme خودکار یه Scheduled Task میسازه که هر ۶۰ روز SSL رو تمدید میکنه. نیازی به کار اضافه نیست.
+
+برای بررسی:
+1. Task Scheduler رو باز کن
+2. سمت چپ، روی "Task Scheduler Library" کلیک کن
+3. باید یه تسک با اسم `win-acme` یا `letsencrypt` ببینی
+
+
+# ═══════════════════════════════════════
+# قدم ۱۵: توقف سایت پیش‌فرض IIS
+# ═══════════════════════════════════════
+
+اگه کسی با آی‌پی سرور باز کن، نباید صفحه IIS پیش‌فرض رو ببینه:
+
+1. IIS Manager رو باز کن
+2. سمت چپ، روی "Default Web Site" کلیک کن
+3. سمت راست، روی "Stop" کلیک کن
+
+
+# ═══════════════════════════════════════
+# قدم ۱۶: تست نهایی
+# ═══════════════════════════════════════
+
+مرورگر رو باز کن و برو به:
+
+✅ `https://yourdomain.com` — باید صفحه لاگین سامانه باراکا رو ببینی
+✅ قفل سبز 🔒 کنار آدرس باید باشه (SSL فعال)
+✅ با یوزر admin و پسورد admin123 وارد بش
+✅ با یوزر user و پسورد user123 وارد بش
+
+
+# ═══════════════════════════════════════
+# نکات مهم بعد از Deploy
+# ═══════════════════════════════════════
 
 ### بکاپ دیتابیس
-فایل `db\custom.db` رو مرتب بکاپ بگیرید:
-```cmd
-copy C:\baraka-app\db\custom.db C:\baraka-app\db\backup\custom-%date:~0,10%.db
-```
+فایل `C:\baraka-app\db\custom.db` حاوی تمام اطلاعات دیتابیسه.
+هر هفته یه کپی ازش بگیر و جایی دیگه ذخیره کن.
 
 ### آپدیت اپلیکیشن
-```cmd
+اگه نسخه جدیدی از پروژه گرفتی:
+1. فایل‌های جدید رو روی سرور کپی کن (جایگزین قبلی)
+2. CMD رو باز کن:
+```
 cd C:\baraka-app
 bun install
 bun run build
 pm2 restart baraka-app
 ```
 
-### مشاهده لاگ‌ها
-```cmd
+### ریستارت دستی اپلیکیشن
+```
+pm2 restart baraka-app
+```
+
+### مشاهده لاگ خطاها
+```
 pm2 logs baraka-app
 ```
 
----
-
-## 📋 خلاصه ۶ قدمه
-
-| # | اقدام | جزئیات |
-|---|--------|---------|
-| 1 | **نصب پیش‌نیازها** | Node.js + Bun + PM2 |
-| 2 | **آپلود پروژه** | RDP یا SCP به `C:\baraka-app` |
-| 3 | **بیلد** | `bun install` → `bun run build` |
-| 4 | **PM2** | `pm2 start bun --name "baraka-app" -- run start` |
-| 5 | **IIS Reverse Proxy** | ARR + URL Rewrite + web.config |
-| 6 | **SSL + DNS** | win-acme یا گواهی خریدی + DNS A Record |
+### وضعیت PM2
+```
+pm2 status
+```
