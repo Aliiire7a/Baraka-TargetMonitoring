@@ -1,47 +1,57 @@
-# راهنمای Deploy پروژه سامانه باراکا
+# راهنمای Deploy پروژه سامانه باراکا روی ویندوز سرور
 
-## ۱. آماده‌سازی پروژه برای Production
+---
 
-### فایل `.env` را تنظیم کنید:
-```env
-DATABASE_URL="file:./db/custom.db"
-NODE_ENV="production"
-PORT=3000
+## قدم ۱: نصب پیش‌نیازها روی ویندوز سرور
+
+### ۱-۱. نصب Node.js
+- از سایت https://nodejs.org نسخه **LTS (20+)** رو دانلود و نصب کنید
+- تیک **"Add to PATH"** رو حتماً بزنید
+- برای بررسی نصب، CMD رو باز کنید:
+```cmd
+node --version
+npm --version
 ```
 
-### بیلد پروژه:
-```bash
-bun run build
+### ۱-۲. نصب Bun
+- PowerShell رو باز کنید و اجرا کنید:
+```powershell
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+- یا از سایت https://bun.sh نسخه ویندوز رو دانلود کنید
+- بررسی:
+```cmd
+bun --version
+```
+
+### ۱-۳. نصب PM2 (برای اجرای مداوم)
+```cmd
+npm install -g pm2 pm2-windows-startup
+pm2-startup install
 ```
 
 ---
 
-## ۲. روش‌های Deploy
+## قدم ۲: آپلود پروژه روی سرور
 
-### روش اول: اجرای مستقیم با PM2 (ساده‌ترین)
+### روش RDP (Remote Desktop):
+1. با RDP وصل بشید به سرور
+2. فولدر پروژه رو از سیستم خودتون **Copy** کنید
+3. روی سرور در مسیر دلخواه **Paste** کنید (مثلاً `C:\baraka-app`)
 
-#### مرحله ۱: نصب پیش‌نیازها روی سرور
-```bash
-# نصب Node.js 20+
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# نصب bun
-curl -fsSL https://bun.sh/install | bash
-
-# نصب PM2
-sudo npm install -g pm2
+### روش SCP/SFTP:
+```cmd
+scp -r C:\my-project user@YOUR_SERVER_IP:C:/baraka-app
 ```
 
-#### مرحله ۲: آپلود پروژه روی سرور
-```bash
-# از روی سیستم локال فایل‌ها رو به سرور منتقل کنید
-scp -r /home/z/my-project user@your-server-ip:/home/user/baraka-app
-```
+---
 
-#### مرحله ۳: نصب و بیلد روی سرور
-```bash
-cd /home/user/baraka-app
+## قدم ۳: بیلد پروژه روی سرور
+
+CMD رو باز کنید:
+```cmd
+cd C:\baraka-app
+
 bun install
 bun run db:push
 bun run db:generate
@@ -49,148 +59,197 @@ bun run prisma/seed.ts
 bun run build
 ```
 
-#### مرحله ۴: اجرا با PM2
-```bash
-# اجرای اپلیکیشن
+---
+
+## قدم ۴: اجرای اپلیکیشن
+
+### تست اول:
+```cmd
+bun run start
+```
+بررسی کنید: مرورگر رو باز کنید و بزنید `http://localhost:3000`
+اگر صفحات بارگزاری شد، Ctrl+C بزنید و برید قدم بعد.
+
+### اجرای دائمی با PM2:
+```cmd
 pm2 start bun --name "baraka-app" -- run start
-
-# ذخیره کردن پروسه (تا بعد از ریستارت سرور هم اجرا بشه)
 pm2 save
-pm2 startup
 ```
 
-#### مرحله ۵: تنظیم Nginx (Reverse Proxy)
-```bash
-sudo apt install nginx -y
-```
-
-فایل `/etc/nginx/sites-available/baraka-app` رو بسازید:
-```nginx
-server {
-    listen 80;
-    server_name yourdomain.com www.yourdomain.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
-```
-
-فعال‌سازی:
-```bash
-sudo ln -s /etc/nginx/sites-available/baraka-app /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
-
-#### مرحله ۶: SSL رایگان با Certbot
-```bash
-sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+برای بررسی وضعیت:
+```cmd
+pm2 status
+pm2 logs baraka-app
 ```
 
 ---
 
-### روش دوم: Docker (حرفه‌ای‌تر)
+## قدم ۵: تنظیم IIS به عنوان Reverse Proxy
 
-#### فایل `Dockerfile`:
-```dockerfile
-FROM oven/bun:1 AS base
-WORKDIR /app
+### ۵-۱. نصب IIS
+1. **Server Manager** رو باز کنید
+2. **Add Roles and Features** → **Web Server (IIS)** رو نصب کنید
+3. تمام زیرمجموعه‌های **Application Development** رو هم نصب کنید
 
-# Install dependencies
-COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+### ۵-۲. نصب Application Request Routing (ARR)
+1. از سایت مایکروسافت دانلود و نصب کنید:
+   https://www.iis.net/downloads/microsoft/application-request-routing
+2. باز کنید IIS Manager → سرور رو انتخاب کنید → **Application Request Routing Cache**
+3. سمت راست **Server Proxy Settings** → تیک **Enable proxy** رو بزنید → **Apply**
 
-# Copy source
-COPY . .
+### ۵-۳. نصب URL Rewrite Module
+از سایت مایکروسافت دانلود و نصب کنید:
+https://www.iis.net/downloads/microsoft/url-rewrite
 
-# Generate Prisma client & build
-RUN bun run db:generate
-RUN bun run build
+### ۵-۴. ساخت وب‌سایت در IIS
+1. **IIS Manager** رو باز کنید
+2. راست‌کلیک روی **Sites** → **Add Website**
+   - **Site name**: `BarakaApp`
+   - **Physical path**: `C:\inetpub\baraka` (یه فولدر خالی بسازید)
+   - **Port**: `80`
+   - **Host name**: `yourdomain.com`
+3. **OK** رو بزنید
 
-# Seed database (only first time)
-RUN bun run prisma/seed.ts || true
+### ۵-۵. تنظیم Reverse Proxy
+در فولدر `C:\inetpub\baraka` یه فایل به نام `web.config` بسازید:
 
-EXPOSE 3000
-CMD ["bun", "run", "start"]
-```
-
-#### فایل `docker-compose.yml`:
-```yaml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    restart: always
-    volumes:
-      - ./db:/app/db
-```
-
-#### اجرا:
-```bash
-docker compose up -d --build
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <rule name="ReverseProxyToBaraka" stopProcessing="true">
+          <match url="(.*)" />
+          <action type="Rewrite" url="http://127.0.0.1:3000/{R:1}" />
+          <serverVariables>
+            <set name="HTTP_X_FORWARDED_PROTO" value="https" />
+            <set name="HTTP_X_FORWARDED_FOR" value="{REMOTE_ADDR}" />
+          </serverVariables>
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>
 ```
 
 ---
 
-## ۳. تنظیم دامین
+## قدم ۶: تنظیم دامین (DNS)
 
-### مرحله ۱: تنظیم DNS
-وارد پنل مدیریت دامین بشید و رکوردهای زیر رو اضافه کنید:
+وارد پنل مدیریت دایمتون بشید:
 
 | نوع | نام | مقدار |
 |-----|------|--------|
-| A | @ | IP سرور شما |
-| A | www | IP سرور شما |
+| **A** | @ | آی‌پی سرور ویندوز |
+| **A** | www | آی‌پی سرور ویندوز |
 
-### مرحله ۲: منتظر بشید تا DNS فعال بشه
-معمولاً بین ۱ تا ۲۴ ساعت طول می‌کشه.
-برای بررسی:
-```bash
-ping yourdomain.com
+منتظر بشید ۱ تا ۲۴ ساعت تا DNS فعال بشه.
+
+---
+
+## قدم ۷: SSL (HTTPS)
+
+### روش ۱: ویندوز با win-acme (رایگان و خودکار)
+
+1. دانلود: https://www.win-acme.com/
+2. اکسترکت کنید و `wacs.exe` رو اجرا کنید
+3. گزینه **M** (Full menu) → **2** (Create certificate - IIS binding)
+4. سایت `BarakaApp` رو انتخاب کنید
+5. دایمنت رو وارد کنید
+6. تایید → گواهی SSL خودکار نصب میشه و هر ۶۰ روز تمدید میشه
+
+### روش ۲: تنظیم دستی پورت ۴۴۳ در IIS
+اگه گواهی SSL خریدید:
+1. IIS Manager → سایت BarakaApp → **Bindings**
+2. **Add** → **https** → پورت **443** → گواهی SSL رو انتخاب کنید
+
+---
+
+## قدم ۸: فایروال ویندوز
+
+پورت‌های ۸۰ و ۴۴۳ رو باز کنید:
+
+### از طریق GUI:
+1. **Windows Firewall with Advanced Security** رو باز کنید
+2. **Inbound Rules** → **New Rule** → **Port** → **TCP**
+3. پورت‌های `80,443` رو وارد کنید → **Allow the connection**
+
+### از طریق PowerShell (Run as Admin):
+```powershell
+New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+New-NetFirewallRule -DisplayName "HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
 ```
 
 ---
 
-## ۴. نکات مهم
+## قدم ۷: تست نهایی
 
-- **فایروال**: پورت‌های ۸۰ و ۴۴۳ رو باز کنید:
-  ```bash
-  sudo ufw allow 80
-  sudo ufw allow 443
-  sudo ufw allow 22
-  ```
+مرورگر رو باز کنید:
+```
+http://yourdomain.com
+https://yourdomain.com
+```
 
-- **بکاپ دیتابیس**: فایل `db/custom.db` رو مرتب بکاپ بگیرید:
-  ```bash
-  cp db/custom.db db/backup/custom-$(date +%Y%m%d).db
-  ```
-
-- **آپدیت اپلیکیشن**: برای آپدیت بعدی:
-  ```bash
-  git pull  # یا scp فایل‌های جدید
-  bun install
-  bun run build
-  pm2 restart baraka-app
-  ```
+باید صفحه لاگین سامانه باراکا رو ببینید! ✅
 
 ---
 
-## ۵. خلاصه سریع (۵ قدم)
+## 🔧 نکات مهم
 
-1. **سرور لینوکس بگیر** + دامین تنظیم کن (DNS → IP سرور)
-2. **پروژه رو آپلود کن** + `bun install` + `bun run build`
-3. **PM2 اجرا کن**: `pm2 start bun --name "baraka-app" -- run start`
-4. **Nginx تنظیم کن**: Reverse Proxy به پورت ۳۰۰۰
-5. **SSL بزن**: `certbot --nginx`
+### اجرای خودکار بعد از ریستارت سرور
+PM2 ممکنه بعد از ریستارت ویندوز اجرا نشه. برای حل این مشکل:
+
+**روش ۱: Scheduled Task**
+1. **Task Scheduler** رو باز کنید
+2. **Create Basic Task**:
+   - نام: `BarakaApp PM2`
+   - Trigger: **When the computer starts**
+   - Action: **Start a program**
+   - Program: `pm2`
+   - Arguments: `resurrect`
+3. **Finish**
+
+**روش ۲: فایل bat در Startup**
+یه فایل `start-baraka.bat` بسازید:
+```bat
+@echo off
+cd C:\baraka-app
+pm2 resurrect
+```
+و یه شورتکات ازش بذارید توی:
+```
+C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+```
+
+### بکاپ دیتابیس
+فایل `db\custom.db` رو مرتب بکاپ بگیرید:
+```cmd
+copy C:\baraka-app\db\custom.db C:\baraka-app\db\backup\custom-%date:~0,10%.db
+```
+
+### آپدیت اپلیکیشن
+```cmd
+cd C:\baraka-app
+bun install
+bun run build
+pm2 restart baraka-app
+```
+
+### مشاهده لاگ‌ها
+```cmd
+pm2 logs baraka-app
+```
+
+---
+
+## 📋 خلاصه ۶ قدمه
+
+| # | اقدام | جزئیات |
+|---|--------|---------|
+| 1 | **نصب پیش‌نیازها** | Node.js + Bun + PM2 |
+| 2 | **آپلود پروژه** | RDP یا SCP به `C:\baraka-app` |
+| 3 | **بیلد** | `bun install` → `bun run build` |
+| 4 | **PM2** | `pm2 start bun --name "baraka-app" -- run start` |
+| 5 | **IIS Reverse Proxy** | ARR + URL Rewrite + web.config |
+| 6 | **SSL + DNS** | win-acme یا گواهی خریدی + DNS A Record |
